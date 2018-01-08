@@ -43,7 +43,7 @@ set.seed(11715490)
 #' &ensp; &ensp;   
 #' &ensp; &ensp; 
 #' 
-#' ## I. Importation du jeu de données et traitement des valeurs manquantes
+#' ## I. Importation du jeu de données et traitement de valeurs manquantes
 #' Le package `foreign` nous permet de lire le jeu de données au format `.arff`. 
 #+ results = "hide", warning = FALSE
 library(foreign)
@@ -63,12 +63,12 @@ names(OBS) <- make.names(names(OBS), unique = TRUE)
 #' &ensp; &ensp;   
 #' &ensp; &ensp; 
 #' 
-#' ## II. Traitement des valeurs manquantes
+#' ## II. Traitement de valeurs manquantes
 #' On demande d'abord un aperçu des valeurs manquantes dans le jeu de données pour décider quel traitement prendre par 
 #' la suite.
 valMan <- which(is.na(OBS), arr.ind = TRUE, useNames = TRUE)
 dim(valMan) 
-#' Il s'avère que dans ce jeu de données de taille `r dim(OBS)[1]` * `r dim(OBS)[2]``,  il n'y a que `r dim(valMan)[1]` 
+#' Il s'avère que dans ce jeu de données de taille `r dim(OBS)[1]` * `r dim(OBS)[2]`,  il n'y a que `r dim(valMan)[1]` 
 #' valeurs manquantes. On n'a donc pas besoin d'en faire une visualisation et le traitement sera relativement libre et simple.
 #' La fonction suivante peut illustrer à l'aide d'un tableau la structure des valeurs manquantes.
 #+ warning = FALSE
@@ -222,10 +222,11 @@ fviz_contrib(pcaOBS2, choice = "var", axes = 2, title = "Contribution of variabl
 #' representation.
 fviz_pca_ind(pcaOBS, col.ind = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE, 
              select.ind = list(name = sample.int(n = nrow(OBS), size = 20)))
-#' Their quality of representation is always the best, equal to 1! This is due to the fact that the first dimension
+#' Their quality of representation is better than the graph below. This is due to the fact that the first dimension
 #' is biased on the redundant information, so that an individual can be easily well represented by 
-#' only these variables because they repeatly occur.  
-#'  
+#' only these variables because they repeatly occur. Furthermore, we can see that the farer away the induvidual is from 
+#' the origin, the better it is represented.  
+#'    
 #' Then we show a graph of 20 randomly selected individuals drawn in the PCA _without_ redundant variables, coloured by their quality of 
 #' representation
 #+ warning = FALSE
@@ -239,10 +240,16 @@ fviz_pca_ind(pcaOBS2, col.ind = "cos2", gradient.cols = c("#00AFBB", "#E7B800", 
 #+ warning = FALSE
 fviz_pca_ind(pcaOBS2, geom = "point", habillage = OBS$Node.Status,  palette = "jco", 
              addEllipses = FALSE, legend.title = "Node Status")
+#' 
 #' Then a graph of randomly selected individuals coloured by subgroups of `Node.Status`
 #+ warning = FALSE
 fviz_pca_ind(pcaOBS2, geom = "point", habillage = OBS$Class,  palette = "RdBu",
             select.ind = list(name = 1:1075), legend.title = "Class")
+#' On peut voir que les centres des sous-groupes dans les deux cas s'allongent dans la même direction, 
+#' digonalement dans le plan 
+#' engendré par les premières 2 dimensions. Ce qui signifie que peut-être les deux classifications sont liées, ou ont une
+#' cause commune etc.
+#' 
 #' ### 3. Présentation graphique intégrée des variables et des individus            
 #' Now we draw some biplots with randomly selected individuals and variables
 #+ warning = FALSE
@@ -261,6 +268,10 @@ plot2 <- fviz_pca_biplot(pcaOBS2,
                          legend.title = "Class", title = NULL,
                          subtitle = "Coloured by Class", xlab = "PC1", ylab = "PC2") 
 grid.arrange(plot1, plot2, ncol=2, top = "Randomly selected individuals with meaningful variables")
+#' Ici on voit plus clairement : les deux classifications sont liées avec les variables `package received rate` et
+#' `flood status`, ainsi que quelques autres de leur groupe qui viennent d'être annulées à cause de la forte corrélation 
+#' entre elles. En revanche, `package transmitted`
+#' ou `time per second` n'ont pas de lien, au moins dans ces deux dimensions, avec les variables catégoriques.
 #' ### 4. Analyse Factorielle des Données Mixtes
 #' Finalement, on veut faire l'AFDM pour résumer les ralations entre les variables quantitatives et les variables
 #' qualitatives, dans un seul graphe de façon
@@ -285,4 +296,5 @@ famdOBS <- FAMD(cbind(OBScomplet[c("Packet.Received..Rate", "Packet_Received", "
 
 cumsum(famdOBS$eig[, 2])
 plot(famdOBS, choix = "var")
-
+#' Dans ce dernier graphe, il est clair que dans le plan engendré par les deux dimensions principales, `package received` et
+#' `flood status` sont bien liés avec les variables qualitatives `node status` et `class`.  
