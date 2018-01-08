@@ -17,6 +17,7 @@ set.seed(11715490)
 #' &ensp; &ensp; 
 #' 
 #' ## 0. Introduction
+#' 
 #' Nous allons traiter un jeu de données concernant la sécurité du réseau. Il s'agit 
 #' apparamment, lors d'un certain genre d'attaque du réseau, des états du réseau, de la transmission des paquets informatiques
 #' etc. Le jeu de données est téléchargeable 
@@ -44,6 +45,7 @@ set.seed(11715490)
 #' &ensp; &ensp; 
 #' 
 #' ## I. Importation du jeu de données et traitement de valeurs manquantes
+#' 
 #' Le package `foreign` nous permet de lire le jeu de données au format `.arff`. 
 #+ results = "hide", warning = FALSE
 library(foreign)
@@ -64,6 +66,7 @@ names(OBS) <- make.names(names(OBS), unique = TRUE)
 #' &ensp; &ensp; 
 #' 
 #' ## II. Traitement de valeurs manquantes
+#' 
 #' On demande d'abord un aperçu des valeurs manquantes dans le jeu de données pour décider quel traitement prendre par 
 #' la suite.
 valMan <- which(is.na(OBS), arr.ind = TRUE, useNames = TRUE)
@@ -101,6 +104,7 @@ OBScomplet[valMan]
 #' &ensp; &ensp;
 #' 
 #' ## III. Analyse des corrélations deux à deux 
+#' 
 #' Dans une analyse de données brutes il peut être intéressant de regarder d'abord s'il y a des corrélations élevées 
 #' deux à deux parmi les variables numériques, afin de détecter celles qui sont susceptibles d'être redondantes. Une 
 #' carte thermique (heatmmap) peut faciliter la visualisation.
@@ -150,14 +154,18 @@ corHmp
 #' &ensp; &ensp; 
 #' 
 #' ## IV. Analyse en composantes principales
+#' 
 #' ### 1. Analyse des variables numériques
 #+warning = FALSE
 library("factoextra")
 pcaOBS <- prcomp(OBScomplet[! names(OBScomplet) %in% c("Node.Status", "Class")], scale. = TRUE, rank. = 3)
-fviz_eig(pcaOBS, ncp = 3, addlabels = TRUE, ylim = c(0, 60))
+fviz_eig(pcaOBS, ncp = 3, addlabels = TRUE, ylim = c(0, 60)) 
 summary(pcaOBS)$importance[3, c(1, 2)]
 fviz_pca_var(pcaOBS, col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE, title =
                "PCA of all numeric variables")
+#' Les trois composantes principales expliquent 87% de la variance totale alors que les deux premières 79%, ce qui est
+#' aussi acceptable.  
+#'   
 #' We see that in the correlation circle there are four subgroups of very closely situated variables which are potentially
 #' redundant variables (visibly there are five, but the one at the very left is highly negatively correlated with the one at the
 #' very right). For example, `Tansmitted_Byte`, `Packet_Transmitted` and `Full_Bandwidth` are even perfectly correlated,
@@ -182,13 +190,17 @@ summary(pcaOBS2)$importance[3, c(1, 2, 3)]
 fviz_eig(pcaOBS2, ncp = 3, addlabels = TRUE, ylim = c(0, 60))
 fviz_pca_var(pcaOBS2, col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE, title =
                "PCA of meaningful numeric variables")
+#' Les trois composantes principales expliquent 75% de la variance totale alors que les deux premières seulement 61%.
+#' Un graphe d'ACP avec les 2 premères dimensions est donc pas très représentatif, qui peut révéler néanmoins quand-même
+#' des pistes.  
+#'   
 #' Following information can be extracted from the correlation circle of the PCA graph above:   
 #'   
 #'   `Flood.Status`, `Packet_lost`, `Packet_Transmitted`, `Packet_Received` and `Packet.Received..Rate` are the five most well
 #' represented or in other words most contributing variables to the first both principal dimensions.
 #'   `Packet_Received` has no contribution to the first dimension while `Node` has no contribution to the second one.
 #'   `Received_Byte` has little contribution to the first dimension while `Packe_lost` has litte contribution to the second one.
-#'   `X10.Run.Delay` and Àverage_Delay_Time_Per_Sec` seem to be correlated in the projected dataset onto the first two dimensions.
+#'   `X10.Run.Delay` and `Average_Delay_Time_Per_Sec` seem to be correlated in the projected dataset onto the first two dimensions.
 #'   `Packet.Received..Rate` and `Flood.Status` are highly negatively correlated.  
 #'  
 #' To extract all information about the remaining variables, we can do
@@ -272,6 +284,7 @@ grid.arrange(plot1, plot2, ncol=2, top = "Randomly selected individuals with mea
 #' `flood status`, ainsi que quelques autres de leur groupe qui viennent d'être annulées à cause de la forte corrélation 
 #' entre elles. En revanche, `package transmitted`
 #' ou `time per second` n'ont pas de lien, au moins dans ces deux dimensions, avec les variables catégoriques.
+#' 
 #' ### 4. Analyse Factorielle des Données Mixtes
 #' Finalement, on veut faire l'AFDM pour résumer les ralations entre les variables quantitatives et les variables
 #' qualitatives, dans un seul graphe de façon
