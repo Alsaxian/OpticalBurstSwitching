@@ -44,7 +44,7 @@ set.seed(11715490)
 #' &ensp; &ensp;   
 #' &ensp; &ensp; 
 #' 
-#' ## I. Importation du jeu de données et traitement de valeurs manquantes
+#' ## I. Importation du jeu de données
 #' 
 #' Le package `foreign` nous permet de lire le jeu de données au format `.arff`. 
 #+ results = "hide", warning = FALSE
@@ -65,7 +65,7 @@ names(OBS) <- make.names(names(OBS), unique = TRUE)
 #' &ensp; &ensp;   
 #' &ensp; &ensp; 
 #' 
-#' ## II. Traitement de valeurs manquantes
+#' ## II. Traitement des valeurs manquantes
 #' 
 #' On demande d'abord un aperçu des valeurs manquantes dans le jeu de données pour décider quel traitement prendre par 
 #' la suite.
